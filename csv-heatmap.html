@@ -1,46 +1,47 @@
 <head>
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans|Raleway' rel='stylesheet' type='text/css'>
 	<style>
-      html, body, #map-canvas {
-        height: 100%;
-        margin: 0px;
-        padding: 0px;
-				font-family: 'Raleway', sans-serif;
-				z-index:1;
-      }
-	  
-			#draggable {
-				z-index:100; 
-				background-color: rgba(200,200,255,.7); 
-				width: 250px;
-				padding: 20px;
-				position:absolute;
-				top:10px;
-				left:100px;
-				cursor: move;
-				border: black 1px solid;
-			}
+    html, body, #map-canvas {
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+			font-family: 'Raleway', sans-serif;
+			z-index:1;
+    }
+  
+		#draggable {
+			z-index:100; 
+			background-color: rgba(200,200,255,.7); 
+			width: 250px;
+			padding: 20px;
+			position:absolute;
+			top:10px;
+			left:100px;
+			cursor: move;
+			border: black 1px solid;
+		}
 
-			#radius-label, #opacity-label {
-				margin-top: 10px;
-			}
+		#radius-label, #opacity-label {
+			margin-top: 10px;
+		}
 
-			#radius-slider, #opacity-slider {
-				width:250px;
-				margin-top: 10px;
-			}
+		#radius-slider, #opacity-slider {
+			width:250px;
+			margin-top: 10px;
+		}
 
-			#radius-slider .ui-slider-handle, #opacity-slider .ui-slider-handle {
-				cursor:pointer;
-			}
-    </style>
+		#radius-slider .ui-slider-handle, 
+		#opacity-slider .ui-slider-handle {
+			cursor:pointer;
+		}
+  </style>
 	
 	<script src="./papaparse.min.js"></script>
-	<script src="./jquery-2.1.1.min.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
-	<script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
 
-		<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+	<script src="./jquery-2.1.1.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
 
 	<script>
 		var map, pointarray, heatmap;
@@ -55,12 +56,22 @@
 				complete: function(results) {
 					csv = [];
 
-					for(idx in results["data"]) {
-						var row = results["data"][idx];
-						csv.push(new google.maps.LatLng(row["lat"], row["lon"]))
+					if(results.meta.fields.indexOf("weight") == -1) {
+						for(idx in results["data"]) {
+							var row = results["data"][idx];
+							csv.push(new google.maps.LatLng(row["lat"], row["lon"]))
+						}
+					} else {
+						for(idx in results["data"]) {
+							var row = results["data"][idx];
+							csv.push({
+								location: new google.maps.LatLng(row["lat"], row["lon"]),
+								weight: row["weight"]
+							});
+						}
 					}
 					
-					console.log("CSV was processed");
+					console.log(results);
 										
 					loadHeatmap(csv);
 				}
@@ -134,19 +145,19 @@
 	</script>
 </head>
 <body>
-	
-
+  <!-- there goes the map -->
 	<div id="map-canvas"> </div>
+
+  <!-- the draggable input and display controls -->
 	<div id="draggable">
 		<input type="file" id="csv-file" name="files"/>
 
-		<div id="radius-label">radius: -</div>
+		<div id="radius-label">radius: 20</div>
 		<div id="radius-slider"></div>
 
-		<div id="opacity-label">opacity: -</div>
+		<div id="opacity-label">opacity: 0.5</div>
 		<div id="opacity-slider"></div>
 	</div>
-
 </body>
 
 <!--
