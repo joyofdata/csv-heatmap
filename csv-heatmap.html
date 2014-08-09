@@ -1,0 +1,121 @@
+<head>
+	<style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+	  
+		#draggable {z-index:100; background-color: rgba(255,255,255,.5); width: 300px}
+		
+		.ui-slider .ui-slider-handle {
+
+    cursor: default;
+    height: 8px;
+    position: absolute;
+    width: 8px;
+    z-index: 2;
+}
+    </style>
+
+	<script src="./papaparse.min.js"></script>
+	<script src="./jquery-2.1.1.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
+	<script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+	<script>
+		var map, pointarray, heatmap;
+		var csv = [];
+
+		function handleFileSelect(evt) {
+			var file = evt.target.files[0];
+			
+			Papa.parse(file, {
+				header: true,
+				dynamicTyping: true,
+				complete: function(results) {
+					csv = [];
+
+					for(idx in results["data"]) {
+						var row = results["data"][idx];
+						csv.push(new google.maps.LatLng(row["lat"], row["lon"]))
+					}
+					
+					console.log("CSV was processed");
+										
+					loadHeatmap(csv);
+				}
+			});
+		}
+		
+		function initialize() {
+		  var mapOptions = {
+			zoom: 4,
+			center: new google.maps.LatLng(52, 11),
+			mapTypeId: google.maps.MapTypeId.SATELLITE
+		  };
+
+		  map = new google.maps.Map(document.getElementById('map-canvas'),
+			  mapOptions);
+		}
+		
+		function loadHeatmap(csv) {
+			var pointArray = new google.maps.MVCArray(csv);
+
+			if(heatmap) heatmap.setMap(null);
+			
+			heatmap = new google.maps.visualization.HeatmapLayer({
+				data: pointArray
+			});
+			
+			heatmap.setMap(map);
+		}
+		
+		$(document).ready(function(){
+			$("#csv-file").change(handleFileSelect);
+			
+			google.maps.event.addDomListener(window, 'load', initialize);
+			
+			$(function() {
+				$( "#draggable" ).draggable();
+			});
+			
+			$(function() {
+				function sliderValueChange( event, ui ) {
+					heatmap.set('radius', heatmap.get('radius') ? null : ui.value);
+					$( "#amount" ).val( ui.value );
+				  }
+			  
+			$( "#slider-vertical" ).slider({
+			  orientation: "horizontal",
+			  range: "min",
+			  min: 1,
+			  max: 20,
+			  value: 60,
+			  slide: sliderValueChange
+			  //change: sliderValueChange
+			});
+			$( "#amount" ).val( $( "#slider-vertical" ).slider( "value" ) );
+			});
+		});
+	</script>
+</head>
+<body>
+	<div id="draggable">
+		&nbsp;<br>
+		<input type="file" id="csv-file" name="files"/>
+		
+		<p>
+		  <label for="amount">Volume:</label>
+		  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+		</p>
+		<div id="slider-vertical" style="height:5px; width:200px;"></div>
+	</div>
+	<div id="map-canvas"></div>
+</body>
+
+<!--
+https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
+http://www.html5rocks.com/en/tutorials/file/dndfiles/
+http://blog.teamtreehouse.com/reading-files-using-the-html5-filereader-api
+-->
