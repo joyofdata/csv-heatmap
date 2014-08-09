@@ -1,27 +1,46 @@
 <head>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans|Raleway' rel='stylesheet' type='text/css'>
 	<style>
       html, body, #map-canvas {
         height: 100%;
         margin: 0px;
-        padding: 0px
+        padding: 0px;
+				font-family: 'Raleway', sans-serif;
+				z-index:1;
       }
 	  
-		#draggable {z-index:100; background-color: rgba(255,255,255,.5); width: 300px}
-		
-		.ui-slider .ui-slider-handle {
+			#draggable {
+				z-index:100; 
+				background-color: rgba(200,200,255,.7); 
+				width: 250px;
+				padding: 20px;
+				position:absolute;
+				top:10px;
+				left:100px;
+				cursor: move;
+				border: black 1px solid;
+			}
 
-    cursor: default;
-    height: 8px;
-    position: absolute;
-    width: 8px;
-    z-index: 2;
-}
+			#radius-label, #opacity-label {
+				margin-top: 10px;
+			}
+
+			#radius-slider, #opacity-slider {
+				width:250px;
+				margin-top: 10px;
+			}
+
+			#radius-slider .ui-slider-handle, #opacity-slider .ui-slider-handle {
+				cursor:pointer;
+			}
     </style>
-
+	
 	<script src="./papaparse.min.js"></script>
 	<script src="./jquery-2.1.1.min.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
 	<script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
 
 	<script>
 		var map, pointarray, heatmap;
@@ -50,7 +69,7 @@
 		
 		function initialize() {
 		  var mapOptions = {
-			zoom: 4,
+			zoom: 6,
 			center: new google.maps.LatLng(52, 11),
 			mapTypeId: google.maps.MapTypeId.SATELLITE
 		  };
@@ -65,7 +84,9 @@
 			if(heatmap) heatmap.setMap(null);
 			
 			heatmap = new google.maps.visualization.HeatmapLayer({
-				data: pointArray
+				data: pointArray,
+				radius: $("#radius-slider").slider("value"),
+				opacity: $("#opacity-slider").slider("value")
 			});
 			
 			heatmap.setMap(map);
@@ -81,37 +102,51 @@
 			});
 			
 			$(function() {
-				function sliderValueChange( event, ui ) {
-					heatmap.set('radius', heatmap.get('radius') ? null : ui.value);
-					$( "#amount" ).val( ui.value );
-				  }
-			  
-			$( "#slider-vertical" ).slider({
-			  orientation: "horizontal",
-			  range: "min",
-			  min: 1,
-			  max: 20,
-			  value: 60,
-			  slide: sliderValueChange
-			  //change: sliderValueChange
-			});
-			$( "#amount" ).val( $( "#slider-vertical" ).slider( "value" ) );
+				$( "#radius-slider" ).slider({
+					orientation: "horizontal",
+					range: "min",
+					min: 1,
+					max: 50,
+					value: 20,
+					slide: function(event, ui) {
+						console.log(ui.value);
+						$("#radius-label").html("radius: " + ui.value);
+						if(heatmap == null) return;
+						heatmap.set('radius', ui.value);
+					}
+				});
+
+				$( "#opacity-slider" ).slider({
+					orientation: "horizontal",
+					range: "min",
+					min: 0,
+					max: 100,
+					value: 50,
+					slide: function(event, ui) {
+						console.log(ui.value);
+						$("#opacity-label").html("opacity: " + ui.value/100);
+						if(heatmap == null) return;
+						heatmap.set('opacity', ui.value/100);
+					}
+				});
 			});
 		});
 	</script>
 </head>
 <body>
+	
+
+	<div id="map-canvas"> </div>
 	<div id="draggable">
-		&nbsp;<br>
 		<input type="file" id="csv-file" name="files"/>
-		
-		<p>
-		  <label for="amount">Volume:</label>
-		  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-		</p>
-		<div id="slider-vertical" style="height:5px; width:200px;"></div>
+
+		<div id="radius-label">radius: -</div>
+		<div id="radius-slider"></div>
+
+		<div id="opacity-label">opacity: -</div>
+		<div id="opacity-slider"></div>
 	</div>
-	<div id="map-canvas"></div>
+
 </body>
 
 <!--
