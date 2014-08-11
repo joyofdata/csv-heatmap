@@ -21,17 +21,24 @@
 			border: black 1px solid;
 		}
 
-		#radius-label, #opacity-label {
+		#radius-label, #opacity-label, #max-label {
 			margin-top: 10px;
 		}
 
-		#radius-slider, #opacity-slider {
+		#radius-slider, #opacity-slider, #max-slider {
 			width:250px;
 			margin-top: 10px;
 		}
 
+		#project {
+			font-size: 10pt;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+
 		#radius-slider .ui-slider-handle, 
-		#opacity-slider .ui-slider-handle {
+		#opacity-slider .ui-slider-handle,
+		#max-slider .ui-slider-handle {
 			cursor:pointer;
 		}
   </style>
@@ -46,6 +53,11 @@
 	<script>
 		var map, pointarray, heatmap;
 		var csv = [];
+
+    // http://stackoverflow.com/a/2901298/562440
+		function numberWithCommas(x) {
+				return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
 
 		function handleFileSelect(evt) {
 			var file = evt.target.files[0];
@@ -62,13 +74,22 @@
 							csv.push(new google.maps.LatLng(row["lat"], row["lon"]))
 						}
 					} else {
+						var max = results["data"][0]["weight"];
+
 						for(idx in results["data"]) {
 							var row = results["data"][idx];
+							
+							max = Math.max(max, row["weight"]);
+
 							csv.push({
 								location: new google.maps.LatLng(row["lat"], row["lon"]),
 								weight: row["weight"]
 							});
 						}
+
+						$("#max-label").html("max: "+numberWithCommas(max));
+						$("#max-slider").slider("option","max",max);
+						$("#max-slider").slider("option","value",max);
 					}
 					
 					console.log(results);
@@ -120,7 +141,6 @@
 					max: 50,
 					value: 20,
 					slide: function(event, ui) {
-						console.log(ui.value);
 						$("#radius-label").html("radius: " + ui.value);
 						if(heatmap == null) return;
 						heatmap.set('radius', ui.value);
@@ -134,10 +154,22 @@
 					max: 100,
 					value: 50,
 					slide: function(event, ui) {
-						console.log(ui.value);
 						$("#opacity-label").html("opacity: " + ui.value/100);
 						if(heatmap == null) return;
 						heatmap.set('opacity', ui.value/100);
+					}
+				});
+
+				$( "#max-slider" ).slider({
+					orientation: "horizontal",
+					range: "min",
+					min: 0,
+					max: 1,
+					value: 0,
+					slide: function(event, ui) {
+						$("#max-label").html("max: " + numberWithCommas(ui.value));
+						if(heatmap == null) return;
+						heatmap.set('maxIntensity', ui.value);
 					}
 				});
 			});
@@ -150,6 +182,7 @@
 
   <!-- the draggable input and display controls -->
 	<div id="draggable">
+		<div id="project"><a href="https://github.com/joyofdata/csv-heatmap">github.com/joyofdata/csv-heatmap</a></div>
 		<input type="file" id="csv-file" name="files"/>
 
 		<div id="radius-label">radius: 20</div>
@@ -157,6 +190,9 @@
 
 		<div id="opacity-label">opacity: 0.5</div>
 		<div id="opacity-slider"></div>
+
+		<div id="max-label">max: -</div>
+		<div id="max-slider"></div>
 	</div>
 </body>
 
