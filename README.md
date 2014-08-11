@@ -1,4 +1,7 @@
 csv-heatmap
 ===========
 
-Load CSV and display an interactive heatmap using Google Maps API
+![world population](world-population.png "World Population")
+
+A description of this little project you may find here:
+
