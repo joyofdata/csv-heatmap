@@ -1,6 +1,6 @@
 csv-heatmap
 ===========
-[Interactive Heatmaps with Google Maps API v3](http://www.joyofdata.de/blog/interactive-heatmaps-with-google-maps-api/)
+[Interactive Heatmaps with Google Maps API v3](http://www.joyofdata.de/blog/interactive-heatmaps-with-google-maps-api/) / [joyofdata.de](http://blog.joyofdata.de) / [Twitter - @joyofdata](https://twitter.com/joyofdata)
 
 ---
 
